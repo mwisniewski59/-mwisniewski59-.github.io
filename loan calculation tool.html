@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Comparison App</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label, input {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="range"] {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            color: #fff; /* White text */
+        }
+        /* Loan 1 input fields */
+        input[type="text"]#amount1,
+        input[type="text"]#rate1,
+        input[type="text"]#duration1 {
+            background-color: #007bff; /* Blue */
+        }
+        input[type="range"]#amount1Range,
+        input[type="range"]#rate1Range,
+        input[type="range"]#duration1Range {
+            background: #007bff; /* Blue */
+        }
+        /* Loan 2 input fields and range inputs */
+        input[type="text"]#amount2,
+        input[type="text"]#rate2,
+        input[type="text"]#duration2 {
+            background-color: #28a745; /* Green */
+        }
+        input[type="range"]#amount2Range,
+        input[type="range"]#rate2Range,
+        input[type="range"]#duration2Range {
+            background: #28a745; /* Green */
+        }
+        /* Neutral slider color */
+        input[type="range"] {
+            accent-color: #9e9e9e; /* Neutral gray */
+        }
+        .loan h2 {
+            margin-bottom: 10px;
+        }
+        .graph {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #1f1f1f;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .bar {
+            height: 40px; /* Thicker bar */
+            position: relative;
+            color: #fff; /* White text */
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+        .bar span {
+            position: absolute;
+            left: 5px;
+            white-space: nowrap;
+        }
+        #bar1Monthly, #bar1Total, #bar1Interest {
+            background-color: #007bff; /* Blue */
+        }
+        #bar2Monthly, #bar2Total, #bar2Interest {
+            background-color: #28a745; /* Green */
+        }
+        /* Text color for Loan 2 bars */
+        #bar2MonthlyText,
+        #bar2TotalText,
+        #bar2InterestText {
+            color: #ffffff; /* White text */
+        }
+        .label {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Loan Comparison App</h1>
+        <div class="loan-comparison">
+            <div class="loan" id="loan1">
+                <h2>Loan 1</h2>
+                <div class="input-group">
+                    <label for="amount1">Loan Amount</label>
+                    <input type="text" id="amount1" oninput="formatAndCalculate('amount1', 'amount1Range')" />
+                    <input type="range" id="amount1Range" min="1000" max="100000" step="100" oninput="syncRangeToInput('amount1Range', 'amount1')" />
+                </div>
+                <div class="input-group">
+                    <label for="rate1">Interest Rate</label>
+                    <input type="text" id="rate1" oninput="formatAndCalculate('rate1', 'rate1Range')" />
+                    <input type="range" id="rate1Range" min="0" max="30" step="0.1" oninput="syncRangeToInput('rate1Range', 'rate1')" />
+                </div>
+                <div class="input-group">
+                    <label for="duration1">Duration (Months)</label>
+                    <input type="text" id="duration1" oninput="formatAndCalculate('duration1', 'duration1Range')" />
+                    <input type="range" id="duration1Range" min="12" max="360" step="1" oninput="syncRangeToInput('duration1Range', 'duration1')" />
+                </div>
+            </div>
+            <div class="loan" id="loan2">
+                <h2>Loan 2</h2>
+                <div class="input-group">
+                    <label for="amount2">Loan Amount</label>
+                    <input type="text" id="amount2" oninput="formatAndCalculate('amount2', 'amount2Range')" />
+                    <input type="range" id="amount2Range" min="1000" max="100000" step="100" oninput="syncRangeToInput('amount2Range', 'amount2')" />
+                </div>
+                <div class="input-group">
+                    <label for="rate2">Interest Rate</label>
+                    <input type="text" id="rate2" oninput="formatAndCalculate('rate2', 'rate2Range')" />
+                    <input type="range" id="rate2Range" min="0" max="30" step="0.1" oninput="syncRangeToInput('rate2Range', 'rate2')" />
+                </div>
+                <div class="input-group">
+                    <label for="duration2">Duration (Months)</label>
+                    <input type="text" id="duration2" oninput="formatAndCalculate('duration2', 'duration2Range')" />
+                    <input type="range" id="duration2Range" min="12" max="360" step="1" oninput="syncRangeToInput('duration2Range', 'duration2')" />
+                </div>
+            </div>
+            <div class="graph" id="graph">
+                <div class="label"><p>Monthly Payment Comparison</p></div>
+                <div class="bar-container">
+                    <div id="bar1Monthly" class="bar"><span id="bar1MonthlyText"></span></div>
+                    <div id="bar2Monthly" class="bar"><span id="bar2MonthlyText"></span></div>
+                </div>
+                <div class="label"><p>Total Payment Comparison</p></div>
+                <div class="bar-container">
+                    <div id="bar1Total" class="bar"><span id="bar1TotalText"></span></div>
+                    <div id="bar2Total" class="bar"><span id="bar2TotalText"></span></div>
+                </div>
+                <div class="label"><p>Total Interest Comparison</p></div>
+                <div class="bar-container">
+                    <div id="bar1Interest" class="bar"><span id="bar1InterestText"></span></div>
+                    <div id="bar2Interest" class="bar"><span id="bar2InterestText"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function syncRangeToInput(rangeId, inputId) {
+            document.getElementById(inputId).value = document.getElementById(rangeId).value;
+            formatAndCalculate(inputId, rangeId);
+        }
+
+        function formatAndCalculate(inputId, rangeId) {
+            let value = parseFloat(document.getElementById(inputId).value.replace(/[^\d.]/g, ''));
+            if (!isNaN(value)) {
+                if (inputId.includes('amount')) {
+                    document.getElementById(inputId).value = `$${value.toLocaleString()}`;
+                } else if (inputId.includes('rate')) {
+                    // No formatting for rate while typing
+                    document.getElementById(inputId).value = value;
+                } else {
+                    document.getElementById(inputId).value = value;
+                }
+                document.getElementById(rangeId).value = value;
+                calculateResults();
+            }
+        }
+
+        function calculateResults() {
+            let amount1 = parseFloat(document.getElementById('amount1').value.replace(/[\$\,]/g, ''));
+            let rate1 = parseFloat(document.getElementById('rate1').value);
+            let duration1 = parseInt(document.getElementById('duration1').value);
+            let amount2 = parseFloat(document.getElementById('amount2').value.replace(/[\$\,]/g, ''));
+            let rate2 = parseFloat(document.getElementById('rate2').value);
+            let duration2 = parseInt(document.getElementById('duration2').value);
+
+            let monthlyPayment1 = calculateMonthlyPayment(amount1, rate1, duration1);
+            let monthlyPayment2 = calculateMonthlyPayment(amount2, rate2, duration2);
+            let totalPaid1 = monthlyPayment1 * duration1;
+            let totalPaid2 = monthlyPayment2 * duration2;
+            let totalInterest1 = totalPaid1 - amount1;
+            let totalInterest2 = totalPaid2 - amount2;
+
+            updateBars('bar1Monthly', monthlyPayment1, 'bar2Monthly', monthlyPayment2);
+            updateBars('bar1Total', totalPaid1, 'bar2Total', totalPaid2);
+            updateBars('bar1Interest', totalInterest1, 'bar2Interest', totalInterest2);
+        }
+
+        function updateBars(barId1, value1, barId2, value2) {
+            let maxValue = Math.max(value1, value2);
+            const maxBarWidth = 100; // Percentage width of the bar container
+            const scale = maxBarWidth / maxValue;
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 2
+                }).format(value);
+            }
+
+            function updateBar(barId, value) {
+                let bar = document.getElementById(barId);
+                let width = Math.min(value * scale, maxBarWidth); // Scale and ensure it doesn't exceed max width
+                bar.style.width = `${width}%`;
+                let text = bar.querySelector('span');
+                text.textContent = formatCurrency(value);
+                text.style.color = '#ffffff'; // White text
+            }
+
+            updateBar(barId1, value1);
+            updateBar(barId2, value2);
+        }
+
+        function calculateMonthlyPayment(principal, annualRate, months) {
+            if (principal <= 0 || annualRate <= 0 || months <= 0) return 0;
+            let monthlyRate = annualRate / 100 / 12;
+            return (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+        }
+    </script>
+</body>
+</html>
